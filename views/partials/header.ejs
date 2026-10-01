@@ -1,0 +1,18 @@
+<header>
+    <div class="logo">AlumniConnect</div>
+    <nav>
+        <ul>
+            <% if (user) { %>
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/alumni">Alumni Directory</a></li>
+                <li><a href="/jobs">Jobs</a></li>
+                <li><a href="/events">Events</a></li>
+                <li><a href="/profile">My Profile</a></li>
+                <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <% } else { %>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+            <% } %>
+        </ul>
+    </nav>
+</header>
