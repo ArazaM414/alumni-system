@@ -116,7 +116,6 @@ app.post('/login', (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            // Updated error message to English
             return res.render('login', { error: 'Incorrect password.' });
         }
 
@@ -175,7 +174,9 @@ app.post('/profile/edit', isAuthenticated, (req, res) => {
     });
 });
 
-// 6. Alumni Directory Route
+// ================= ALUMNI CRUD ROUTES ================= //
+
+// 6. READ: Alumni Directory (with Search)
 app.get('/alumni', isAuthenticated, (req, res) => {
     const searchQuery = req.query.search;
     let sql = 'SELECT id, full_name, email, batch, department, organization FROM users';
@@ -196,7 +197,49 @@ app.get('/alumni', isAuthenticated, (req, res) => {
     });
 });
 
-// 7. Logout Route
+// 7. CREATE: Add New Alumni (POST)
+app.post('/alumni/add', isAuthenticated, async (req, res) => {
+    const { full_name, email, batch, department, organization, password } = req.body;
+    const defaultPassword = password || 'alumni123'; // Default password if not provided
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    const sql = 'INSERT INTO users (full_name, email, batch, department, organization, password) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(sql, [full_name, email, batch || null, department || null, organization || null, hashedPassword], (err, result) => {
+        if (err) {
+            console.error('Error adding alumni:', err);
+        }
+        res.redirect('/alumni');
+    });
+});
+
+// 8. UPDATE: Edit Specific Alumni (POST)
+app.post('/alumni/edit/:id', isAuthenticated, (req, res) => {
+    const { id } = req.params;
+    const { full_name, email, batch, department, organization } = req.body;
+
+    const sql = 'UPDATE users SET full_name = ?, email = ?, batch = ?, department = ?, organization = ? WHERE id = ?';
+    db.query(sql, [full_name, email, batch || null, department || null, organization || null, id], (err, result) => {
+        if (err) {
+            console.error('Error updating alumni record:', err);
+        }
+        res.redirect('/alumni');
+    });
+});
+
+// 9. DELETE: Delete Specific Alumni (POST / GET)
+app.post('/alumni/delete/:id', isAuthenticated, (req, res) => {
+    const { id } = req.params;
+
+    const sql = 'DELETE FROM users WHERE id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error('Error deleting alumni:', err);
+        }
+        res.redirect('/alumni');
+    });
+});
+
+// 10. Logout Route
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
         res.redirect('/login');
